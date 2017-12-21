@@ -1,28 +1,28 @@
-FROM php:7.1-fpm
+FROM phusion/baseimage:latest
+
+RUN add-apt-repository -y ppa:ondrej/php
+RUN apt-get update && apt-get install -y software-properties-common
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        curl \
-        libz-dev \
-        libpq-dev \
-        libssl-dev \
-        libmcrypt-dev
-
-RUN docker-php-ext-install mcrypt
-RUN docker-php-ext-install pdo_pgsql
-
-RUN pecl install xdebug && docker-php-ext-enable xdebug
-COPY ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
-
-ADD ./site.ini /usr/local/etc/php/conf.d
-ADD ./site.pool.conf /usr/local/etc/php-fpm.d/
+    libssl-dev \
+    libmcrypt-dev \
+    curl \
+    php7.2 \
+    php7.2-fpm \
+    php7.2-mbstring \
+    php7.2-pgsql \
+    php7.2-curl
 
 RUN rm -r /var/lib/apt/lists/*
-
 RUN usermod -u 1000 www-data
+
+ADD ./php-fpm.conf /etc/php/7.2/fpm/php-fpm.conf
+ADD ./www.conf /etc/php/7.2/fpm/pool.d/www.conf
+ADD ./site.ini /etc/php/7.2/fpm/conf.d/site.ini
 
 WORKDIR /var/www
 
-CMD ["php-fpm"]
+CMD ["/usr/sbin/php-fpm7.2", "-F"]
 
 EXPOSE 9000
